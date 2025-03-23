@@ -1,89 +1,71 @@
-import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
+"use client"
 
-export function ChallengeCard() {
-  const [isEditing, setIsEditing] = useState(false)
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+
+interface ChallengeCardProps {
+  memberId?: string;
+  teamId?: string;
+}
+
+export function ChallengeCard({ memberId, teamId }: ChallengeCardProps) {
   const [titleText, setTitleText] = useState("Current Challenge")
-  const [enemy, setEnemy] = useState("Market saturation and fierce competition")
-  const [importance, setImportance] = useState(
-    "Overcoming this challenge will set us apart and secure our position as industry leaders.",
-  )
-  const [fightingAgainstTitle, setFightingAgainstTitle] = useState("What we're fighting against:")
-  const [importanceTitle, setImportanceTitle] = useState("Why it matters:")
+  const [challengeTitle, setChallengeTitle] = useState("What we're fighting against:")
+  const [whyTitle, setWhyTitle] = useState("Why it matters:")
+  const [challenge, setChallenge] = useState("Market saturation and fierce competition")
+  const [why, setWhy] = useState("Overcoming this challenge will set us apart and secure our position as industry leaders.")
+
+  // Load data from backend
+  useEffect(() => {
+    const loadChallengeData = async () => {
+      if (!memberId) return;
+      
+      try {
+        const response = await fetch(`/api/current-challenge?memberId=${memberId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            setTitleText(data[0].title || "Current Challenge");
+            setChallengeTitle(data[0].challenge_title || "What we're fighting against:");
+            setWhyTitle(data[0].why_title || "Why it matters:");
+            setChallenge(data[0].challenge || "Market saturation and fierce competition");
+            setWhy(data[0].why || "Overcoming this challenge will set us apart and secure our position as industry leaders.");
+          }
+        }
+      } catch (error) {
+        console.error('Error loading challenge data:', error);
+      }
+    };
+    
+    loadChallengeData();
+  }, [memberId]);
 
   return (
-    <Card className="shadow-md rounded-xl">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        {isEditing ? (
-          <Input
-            value={titleText}
-            onChange={(e) => setTitleText(e.target.value)}
-            className="text-2xl font-bold text-[#5b06be] w-full max-w-[300px]"
-          />
-        ) : (
-          <span className="text-2xl font-bold text-[#5b06be]">{titleText}</span>
-        )}
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="p-1.5 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.3)] transition-shadow duration-300"
-          >
-            <Image
-              src="https://res.cloudinary.com/drkudvyog/image/upload/v1734443082/Edit_icon_duha_g7r8lk.png"
-              alt="Edit Icon"
-              width={20}
-              height={20}
-            />
-          </button>
-        )}
+    <Card className="border border-[#ddd] rounded-xl">
+      <CardHeader className="pb-4">
+        <div className="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span className="text-2xl font-bold text-black">{titleText}</span>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div>
-          {isEditing ? (
-            <Input
-              value={fightingAgainstTitle}
-              onChange={(e) => setFightingAgainstTitle(e.target.value)}
-              className="font-semibold mb-4 text-lg text-[#fbb350]"
-            />
-          ) : (
-            <h3 className="font-semibold mb-4 text-lg text-[#fbb350]">{fightingAgainstTitle}</h3>
-          )}
-          {isEditing ? (
-            <Textarea value={enemy} onChange={(e) => setEnemy(e.target.value)} className="text-base" />
-          ) : (
-            <p className="text-base">{enemy}</p>
-          )}
-        </div>
-        <div>
-          {isEditing ? (
-            <Input
-              value={importanceTitle}
-              onChange={(e) => setImportanceTitle(e.target.value)}
-              className="font-semibold mb-4 text-lg text-[#fbb350]"
-            />
-          ) : (
-            <h3 className="font-semibold mb-4 text-lg text-[#fbb350]">{importanceTitle}</h3>
-          )}
-          {isEditing ? (
-            <Textarea value={importance} onChange={(e) => setImportance(e.target.value)} className="text-base" />
-          ) : (
-            <p className="text-base">{importance}</p>
-          )}
-        </div>
-        {isEditing && (
-          <div className="px-6 pb-6">
-            <Button
-              onClick={() => setIsEditing(false)}
-              className="w-full rounded-full bg-[#fbb350] hover:bg-[#fbb350]/80 text-white transition-colors duration-200"
-            >
-              Save Changes
-            </Button>
-          </div>
-        )}
+        {/* What we're fighting against container */}
+        <Card className="border border-[#ddd] rounded-xl">
+          <CardContent className="p-4">
+            <h3 className="font-semibold mb-4 text-lg text-[#5b06be]">{challengeTitle}</h3>
+            <p className="text-base">{challenge}</p>
+          </CardContent>
+        </Card>
+        
+        {/* Why it matters container */}
+        <Card className="border border-[#ddd] rounded-xl">
+          <CardContent className="p-4">
+            <h3 className="font-semibold mb-4 text-lg text-[#5b06be]">{whyTitle}</h3>
+            <p className="text-base">{why}</p>
+          </CardContent>
+        </Card>
       </CardContent>
     </Card>
   )
